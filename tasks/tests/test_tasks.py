@@ -277,7 +277,7 @@ def test_filter_tasks_by_status(api_client, get_token):
     for i in range(3):
         response = api_client.post(reverse('task-list'), {
             'task_type': 'sum',
-            'input_data': {'a': i, 'b': i + 1}
+            'input_data': [i, i+1]
         }, format='json')
         assert response.status_code == status.HTTP_201_CREATED
     response = api_client.get(reverse('task-list') + '?status=pending')
@@ -299,7 +299,7 @@ def test_sort_tasks_by_id(api_client, get_token):
     for i in range(3):
         response = api_client.post(reverse('task-list'), {
             'task_type': 'sum',
-            'input_data': {'a': i, 'b': i + 1}
+            'input_data': [i, i+1]
         }, format='json')
         assert response.status_code == status.HTTP_201_CREATED
         ids.append(response.data['id'])
@@ -327,7 +327,7 @@ def test_filter_and_sort_tasks(api_client, get_token):
     for i in range(5):
         response = api_client.post(reverse('task-list'), {
             'task_type': 'sum',
-            'input_data': {'a': i, 'b': i + 1}
+            'input_data': [i, i+1]
         }, format='json')
         assert response.status_code == status.HTTP_201_CREATED
         ids.append(response.data['id'])

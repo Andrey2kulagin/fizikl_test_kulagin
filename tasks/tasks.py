@@ -11,6 +11,7 @@ def sum_task(task_id):
     if random.random() < 0.2:  # 20% вероятность ошибки
         raise ValueError("Случайная ошибка в sum_task")
     result = sum(task.input_data)
+    task.result = result
     task.save()
 
     return result
@@ -23,6 +24,8 @@ def countdown_task(task_id):
     if random.random() < 0.2:  # 20% вероятность ошибки
         raise ValueError("Случайная ошибка в sum_task")
     time.sleep(countdown_time)
+    task.result = "Успешно завершено"
+    task.save()
     return task.result
 
 
