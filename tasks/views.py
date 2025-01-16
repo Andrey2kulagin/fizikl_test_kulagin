@@ -28,6 +28,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = TaskPagination  # Пагинация
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    http_method_names = ['get', 'head', 'options', 'post']
 
     # Фильтрация
     filterset_fields = ['status']  # Фильтр только по `status`

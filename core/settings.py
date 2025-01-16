@@ -1,10 +1,12 @@
 from datetime import timedelta
 from pathlib import Path
 import os
-BASE_DIR = Path(__file__).resolve().parent.parent
+from django.core.management.utils import get_random_secret_key
 
-SECRET_KEY = os.urandom(24).hex()  # Создайте новый ключ через
+BASE_DIR = Path(__file__).resolve().parent.parent
+SECRET_KEY = get_random_secret_key()  # Создайте новый ключ через
 DEBUG = True
+
 
 ALLOWED_HOSTS = []
 
@@ -52,12 +54,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if os.getenv('POSTGRES_DB') and os.getenv('POSTGRES_USER') and os.getenv('POSTGRES_PASSWORD'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('POSTGRES_DB'),
+            'USER': os.getenv('POSTGRES_USER'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+            'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
+            'PORT': os.getenv('POSTGRES_PORT', '5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -83,6 +98,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -118,10 +134,9 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'  # URL Redis-брокера
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 
-# Настройки бэкэнда результатов для Celery (Redis)
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 # Настройки для сериализации сообщений
 CELERY_TASK_SERIALIZER = 'json'  # Сериализация задач
