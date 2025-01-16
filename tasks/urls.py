@@ -5,4 +5,4 @@ router = DefaultRouter()
 router.register(r'task', TaskViewSet)
 
 
-urlpatterns = router.urls  # Просто передаем маршруты из роутера
+urlpatterns = router.urls

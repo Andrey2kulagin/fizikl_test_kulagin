@@ -1,6 +1,7 @@
 from django.contrib.auth.backends import ModelBackend
 from user.models import CustomUser
 
+
 class EmailOrUsernameBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         user = None

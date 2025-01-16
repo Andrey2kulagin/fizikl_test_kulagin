@@ -1,10 +1,22 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import PageNumberPagination
 from .models import Task
 from .serializers import TaskSerializer, TaskCreateSerializer
 from .tasks import sum_task, countdown_task
 from rest_framework import serializers
+
+
+class TaskPagination(PageNumberPagination):
+    """
+    Кастомный класс пагинации.
+    """
+    page_size = 10  # Количество элементов на одной странице
+    # Позволяет изменять размер страницы через query-параметр
+    page_size_query_param = 'page_size'
+    max_page_size = 100  # Максимальное количество элементов на странице
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -14,6 +26,15 @@ class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = TaskPagination  # Пагинация
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+
+    # Фильтрация
+    filterset_fields = ['status']  # Фильтр только по `status`
+
+    # Сортировка
+    ordering_fields = ['id']  # Сортировка только по `id`
+    ordering = ['id']  # Сортировка по умолчанию (по возрастанию id)
 
     def get_queryset(self):
         """
@@ -35,20 +56,22 @@ class TaskViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
         # Ограничение на количество активных задач
-        active_tasks_count = Task.objects.filter(user=user, status__in=['pending', 'in_progress']).count()
+        active_tasks_count = Task.objects.filter(
+            user=user, status__in=['pending', 'in_progress']).count()
         if active_tasks_count >= 5:
-            raise serializers.ValidationError({"non_field_errors": ["Невозможно создать больше 5 задач одновременно."]})
-        
+            raise serializers.ValidationError(
+                {"non_field_errors": ["Невозможно создать больше 5 задач одновременно."]})
+
         task = serializer.save(user=user, status='pending')
-        
+
         # Отправка задачи в Celery
         if task.task_type == 'sum':
             sum_task.apply_async(args=[task.id])
         elif task.task_type == 'countdown':
             countdown_task.apply_async(args=[task.id])
-        
+
         return task
-    
+
     def create(self, request, *args, **kwargs):
         """
         Создаем задачу и возвращаем ID задачи.
@@ -57,7 +80,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         task = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        
+
         # Возвращаем ID задачи вместе с данными сериализатора
         return Response(
             {

@@ -1,18 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from user.views import CustomUserViewSet, RegisterView
+from user.views import RegisterView, CustomTokenObtainPairView, CustomTokenRefreshView
 
-# Создаём роутер для ViewSet
-router = DefaultRouter()
-router.register(r'user', CustomUserViewSet)
-
-# Дополнительные маршруты
-extra_patterns = [
-    path('register/', RegisterView.as_view(), name='register'),
-]
-
-# Объединяем маршруты
 urlpatterns = [
-    path('', include(router.urls)),  # Все маршруты из DefaultRouter
-    *extra_patterns,  # Дополнительные маршруты
+    path('register/', RegisterView.as_view(), name='register'),
+    path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
 ]

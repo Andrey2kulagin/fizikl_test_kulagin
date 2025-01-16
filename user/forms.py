@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from .models import CustomUser
 
-
+# форма для входа в админке по email или username
 class EmailOrUsernameLoginForm(AuthenticationForm):
     username = forms.CharField(label='Логин или Email')
 
@@ -19,4 +19,5 @@ class EmailOrUsernameLoginForm(AuthenticationForm):
                 user = CustomUser.objects.get(username=username_or_email)
                 return user.username  # Возвращаем username
             except CustomUser.DoesNotExist:
-                raise forms.ValidationError("Пользователь с таким email или логином не существует.")
+                raise forms.ValidationError(
+                    "Пользователь с таким email или логином не существует.")
